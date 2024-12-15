@@ -1,0 +1,23 @@
+﻿Сборка начата 11.12.2024 12:33:08.
+Уровень детализации журнала: Normal.     1>Проект "D:\study(3sem)\LDV-2024\LDV-2024\LIB\LIB.vcxproj" в узле 2 (целевые объекты Build).
+     1>InitializeBuildStatus:
+         Обращение к "Debug\LIB.tlog\unsuccessfulbuild".
+       ClCompile:
+         Для всех выходных данных обновления не требуется.
+       Link:
+         C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.37.32822\bin\HostX86\x86\link.exe /ERRORREPORT:PROMPT /OUT:"D:\study(3sem)\LDV-2024\LDV-2024\Debug\LIB.exe" /INCREMENTAL /ILK:"Debug\LIB.ilk" /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"D:\study(3sem)\LDV-2024\LDV-2024\Debug\LIB.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"D:\study(3sem)\LDV-2024\LDV-2024\Debug\LIB.lib" /MACHINE:X86 Debug\lib.obj
+     1>MSVCRTD.lib(exe_main.obj) : error LNK2019: ссылка на неразрешенный внешний символ _main в функции "int __cdecl invoke_main(void)" (?invoke_main@@YAHXZ).
+     1>D:\study(3sem)\LDV-2024\LDV-2024\Debug\LIB.exe : fatal error LNK1120: неразрешенных внешних элементов: 1
+     1>Сборка проекта "D:\study(3sem)\LDV-2024\LDV-2024\LIB\LIB.vcxproj" завершена (целевые объекты Build) с ошибкой.
+
+Ошибка сборки.
+
+       "D:\study(3sem)\LDV-2024\LDV-2024\LIB\LIB.vcxproj" (целевой объект Build ) (1) ->
+       (Целевой объект Link) -> 
+         MSVCRTD.lib(exe_main.obj) : error LNK2019: ссылка на неразрешенный внешний символ _main в функции "int __cdecl invoke_main(void)" (?invoke_main@@YAHXZ).
+         D:\study(3sem)\LDV-2024\LDV-2024\Debug\LIB.exe : fatal error LNK1120: неразрешенных внешних элементов: 1
+
+    Предупреждений: 0
+    Ошибок: 2
+
+Прошло времени 00:00:00.83
