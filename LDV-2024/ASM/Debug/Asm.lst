@@ -1,0 +1,587 @@
+Microsoft (R) Macro Assembler Version 14.37.32822.0	    12/15/24 17:32:41
+Asm.asm							     Page 1 - 1
+
+
+				.586
+				.model flat, stdcall
+				includelib libucrt.lib
+				includelib kernel32.lib
+				includelib "../Debug/lib.lib"
+				ExitProcess PROTO:DWORD 
+				.stack 4096
+
+				ExitProcess PROTO :DWORD
+				outn PROTO : SDWORD
+				outw PROTO : DWORD
+				outnf PROTO : SDWORD
+				outwf PROTO : DWORD
+				len PROTO : DWORD
+				comp PROTO : DWORD, : DWORD
+				stcmp PROTO : DWORD, : DWORD
+
+ 00000000			.const
+ 00000000 0D 0A 00				newline byte 13, 10, 0
+ 00000003 DD F2 EE 20 EF	L1 byte 'Это процедура', 0
+	   F0 EE F6 E5 E4
+	   F3 F0 E0 00
+ 00000011 00000002		L2 sdword 2
+ 00000015 00000009		L3 sdword 9
+ 00000019 CC E0 EA F1 E8	L4 byte 'Максимальное число больше 5', 0
+	   EC E0 EB FC ED
+	   EE E5 20 F7 E8
+	   F1 EB EE 20 E1
+	   EE EB FC F8 E5
+	   20 35 00
+ 00000035 00000005		L5 sdword 5
+ 00000039 73 64 66 67 68	L6 byte 'sdfgh', 0
+	   00
+ 0000003F 50 72 6F 6A 65	L7 byte 'Project', 0
+	   63 74 00
+ 00000047 50 72 6F 6A 65	L8 byte 'Projec!', 0
+	   63 21 00
+ 0000004F C4 EB E8 ED FB	L9 byte 'Длины строк равны', 0
+	   20 F1 F2 F0 EE
+	   EA 20 F0 E0 E2
+	   ED FB 00
+ 00000061 C4 EB E8 ED FB	L10 byte 'Длины строк НЕ равны', 0
+	   20 F1 F2 F0 EE
+	   EA 20 CD C5 20
+	   F0 E0 E2 ED FB
+	   00
+ 00000076 20 00			L11 byte ' ', 0
+ 00000078 0000000A		L12 sdword 10
+ 0000007C 00000020		L13 sdword 32
+ 00000000			.data
+ 00000000 00000000				temp sdword ?
+ 00000004  00000100 [				buffer byte 256 dup(0)
+	    00
+	   ]
+
+ 00000104 00000000		find_maxmax sdword 0
+ 00000108 00000000		max sdword 0
+ 0000010C 00000000		text dword ?
+ 00000110 00000000		res dword ?
+ 00000114 00000000		str1 dword ?
+ 00000118 00000000		str2 dword ?
+ 0000011C 00000000		strc1 sdword 0
+ 00000120 00000000		strc2 sdword 0
+ 00000124 00000000		answer1 sdword 0
+ 00000128 00000000		answer2 sdword 0
+ 0000012C 00000000		math1 sdword 0
+ 00000130 00000000		math2 sdword 0
+ 00000134 00000000		math3 sdword 0
+ 00000138 00000000		math4 sdword 0
+ 0000013C 00000000		math5 sdword 0
+ 00000140 00000000		check1 sdword 0
+ 00000144 00000000		check2 sdword 0
+ 00000148 00000000		res2 sdword 0
+ 0000014C 00000000		left dword ?
+ 00000150 00000000		rig dword ?
+ 00000154 00000000		result sdword ?
+ 00000158  00000004 [		result_str byte 4 dup(0)
+	    00
+	   ]
+ 00000000			.code
+ 00000000			int_to_char PROC uses eax ebx ecx edi esi,
+				pstr: dword,
+				intfield : sdword
+ 00000008  8B 7D 08		mov edi, pstr
+ 0000000B  BE 00000000		mov esi, 0
+ 00000010  8B 45 0C		mov eax, intfield
+ 00000013  99			cdq
+ 00000014  BB 0000000A		mov ebx, 10
+ 00000019  F7 FB		idiv ebx
+ 0000001B  A9 80000000		test eax, 80000000h
+ 00000020  74 09		jz plus
+ 00000022  F7 D8		neg eax
+ 00000024  F7 DA		neg edx
+ 00000026  B1 2D		mov cl, '-'
+ 00000028  88 0F		mov[edi], cl
+ 0000002A  47			inc edi
+ 0000002B			plus :
+ 0000002B  66| 52		push dx
+ 0000002D  46			inc esi
+ 0000002E  85 C0		test eax, eax
+ 00000030  74 05		jz fin
+ 00000032  99			cdq
+ 00000033  F7 FB		idiv ebx
+ 00000035  EB F4		jmp plus
+ 00000037			fin :
+ 00000037  8B CE		mov ecx, esi
+ 00000039			write :
+ 00000039  66| 5B		pop bx
+ 0000003B  80 C3 30		add bl, '0'
+ 0000003E  88 1F		mov[edi], bl
+ 00000040  47			inc edi
+ 00000041  E2 F6		loop write
+				ret
+ 0000004C			int_to_char ENDP
+
+
+				;----------- find_max ------------
+ 0000004C			find_max PROC,
+					find_maxx : sdword, find_maxy : sdword  
+				; --- save registers ---
+ 0000004F  53			push ebx
+ 00000050  52			push edx
+				; ----------------------
+ 00000051  FF 75 08		push find_maxx
+
+ 00000054  5B			pop ebx
+ 00000055  89 1D 0000014C R	mov left, ebx
+
+ 0000005B  FF 75 0C		push find_maxy
+
+ 0000005E  5B			pop ebx
+ 0000005F  89 1D 00000150 R	mov rig, ebx
+
+ 00000065  8B 15 0000014C R	mov edx, left
+ 0000006B  3B 15 00000150 R	cmp edx, rig
+
+ 00000071  7F 02		jg right1
+ 00000073  7C 0C		jl wrong1
+ 00000075			 right1:
+ 00000075  FF 75 08		push find_maxx
+
+ 00000078  5B			pop ebx
+ 00000079  89 1D 00000104 R	mov find_maxmax, ebx
+
+
+ 0000007F  EB 0A		jmp next1
+ 00000081			wrong1:
+ 00000081  FF 75 0C		push find_maxy
+
+ 00000084  5B			pop ebx
+ 00000085  89 1D 00000104 R	mov find_maxmax, ebx
+
+ 0000008B			next1:
+				; --- restore registers ---
+ 0000008B  5A			pop edx
+ 0000008C  5B			pop ebx
+				; -------------------------
+ 0000008D  A1 00000104 R	mov eax, find_maxmax
+				ret
+ 00000096			find_max ENDP
+				;------------------------------
+
+
+				;----------- foo ------------
+ 00000096			foo PROC,
+					fooxxx : dword  
+				; --- save registers ---
+ 00000099  53			push ebx
+ 0000009A  52			push edx
+				; ----------------------
+				; --- restore registers ---
+ 0000009B  5A			pop edx
+ 0000009C  5B			pop ebx
+				; -------------------------
+ 0000009D  8B 45 08		mov eax, fooxxx
+				ret
+ 000000A4			foo ENDP
+				;------------------------------
+
+
+				;----------- func ------------
+ 000000A4			func PROC 
+					
+				; --- save registers ---
+ 000000A4  53			push ebx
+ 000000A5  52			push edx
+				; ----------------------
+
+				INVOKE outwf, offset L1
+
+				; --- restore registers ---
+ 000000B0  5A			pop edx
+ 000000B1  5B			pop ebx
+				; -------------------------
+ 000000B2  C3			ret
+ 000000B3			func ENDP
+				;------------------------------
+
+
+				;----------- MAIN ------------
+ 000000B3			main PROC
+
+ 000000B3  E8 FFFFFFEC		call func
+
+ 000000B8  FF 35 00000011 R	push L2
+ 000000BE  FF 35 00000015 R	push L3
+ 000000C4  E8 FFFFFF83		call find_max
+ 000000C9  50			push eax
+
+ 000000CA  5B			pop ebx
+ 000000CB  89 1D 00000108 R	mov max, ebx
+
+ 000000D1  C7 05 0000010C R	mov text, offset L4
+	   00000019 R
+ 000000DB  FF 35 00000108 R	push max
+
+ 000000E1  5B			pop ebx
+ 000000E2  89 1D 0000014C R	mov left, ebx
+
+ 000000E8  FF 35 00000035 R	push L5
+
+ 000000EE  5B			pop ebx
+ 000000EF  89 1D 00000150 R	mov rig, ebx
+
+ 000000F5  8B 15 0000014C R	mov edx, left
+ 000000FB  3B 15 00000150 R	cmp edx, rig
+
+ 00000101  7F 02		jg right2
+ 00000103  EB 0B		jmp next2
+ 00000105			 right2:
+
+				INVOKE outwf, text
+
+ 00000110			next2:
+ 00000110  C7 05 00000110 R	mov res, offset L6
+	   00000039 R
+
+				INVOKE outwf, res
+
+ 00000125  C7 05 00000114 R	mov str1, offset L7
+	   0000003F R
+ 0000012F  C7 05 00000118 R	mov str2, offset L8
+	   00000047 R
+ 00000139  FF 35 00000114 R	push str1
+ 0000013F  E8 00000000 E	call len
+ 00000144  50			push eax
+
+ 00000145  5B			pop ebx
+ 00000146  89 1D 0000011C R	mov strc1, ebx
+
+ 0000014C  FF 35 00000118 R	push str2
+ 00000152  E8 00000000 E	call len
+ 00000157  50			push eax
+
+ 00000158  5B			pop ebx
+ 00000159  89 1D 00000120 R	mov strc2, ebx
+
+ 0000015F  FF 35 0000011C R	push strc1
+
+ 00000165  5B			pop ebx
+ 00000166  89 1D 0000014C R	mov left, ebx
+
+ 0000016C  FF 35 00000120 R	push strc2
+
+ 00000172  5B			pop ebx
+ 00000173  89 1D 00000150 R	mov rig, ebx
+
+ 00000179  8B 15 0000014C R	mov edx, left
+ 0000017F  3B 15 00000150 R	cmp edx, rig
+
+ 00000185  74 02		jz right3
+ 00000187  75 0C		jnz wrong3
+ 00000189			 right3:
+ 00000189  C7 05 0000010C R	mov text, offset L9
+	   0000004F R
+
+ 00000193  EB 0A		jmp next3
+ 00000195			wrong3:
+ 00000195  C7 05 0000010C R	mov text, offset L10
+	   00000061 R
+ 0000019F			next3:
+
+				INVOKE outwf, text
+
+ 000001AA  FF 35 00000114 R	push str1
+ 000001B0  FF 35 00000118 R	push str2
+ 000001B6  E8 00000000 E	call comp
+ 000001BB  50			push eax
+
+ 000001BC  5B			pop ebx
+ 000001BD  89 1D 00000124 R	mov answer1, ebx
+
+ 000001C3  FF 35 00000114 R	push str1
+ 000001C9  FF 35 00000114 R	push str1
+ 000001CF  E8 00000000 E	call comp
+ 000001D4  50			push eax
+
+ 000001D5  5B			pop ebx
+ 000001D6  89 1D 00000128 R	mov answer2, ebx
+
+ 000001DC  A1 00000124 R	mov eax, answer1
+ 000001E1  A3 00000154 R	mov result, eax	
+ 000001E6  8D 3D 00000158 R	 lea edi, result_str
+ 000001EC  B9 00000004		 mov ecx, 4
+ 000001F1  32 C0		 xor al, al
+ 000001F3  F3/ AA		 rep stosb
+				INVOKE int_to_char, offset result_str, result
+				INVOKE outw, offset result_str
+
+
+				INVOKE outw, offset L11
+
+ 00000219  A1 00000128 R	mov eax, answer2
+ 0000021E  A3 00000154 R	mov result, eax	
+ 00000223  8D 3D 00000158 R	 lea edi, result_str
+ 00000229  B9 00000004		 mov ecx, 4
+ 0000022E  32 C0		 xor al, al
+ 00000230  F3/ AA		 rep stosb
+				INVOKE int_to_char, offset result_str, result
+				INVOKE outwf, offset result_str
+
+ 0000024C  FF 35 00000035 R	push L5
+ 00000252  FF 35 00000011 R	push L2
+ 00000258  5B			pop ebx
+ 00000259  58			pop eax
+ 0000025A  2B C3		sub eax, ebx
+ 0000025C  50			push eax
+
+ 0000025D  5B			pop ebx
+ 0000025E  89 1D 0000012C R	mov math1, ebx
+
+ 00000264  FF 35 00000035 R	push L5
+ 0000026A  FF 35 00000011 R	push L2
+ 00000270  5B			pop ebx
+ 00000271  58			pop eax
+ 00000272  03 C3		add eax, ebx
+ 00000274  50			push eax
+
+ 00000275  5B			pop ebx
+ 00000276  89 1D 00000130 R	mov math2, ebx
+
+ 0000027C  FF 35 00000035 R	push L5
+ 00000282  FF 35 00000011 R	push L2
+
+ 00000288  5B				pop ebx
+ 00000289  58				pop eax
+ 0000028A  85 DB			test ebx, ebx
+ 0000028C  0F 84 00000220		jz EXIT_DIV_ON_NULL
+ 00000292  99				cdq
+ 00000293  BA 00000000			mov	edx, 	0
+ 00000298  F7 FB			idiv ebx
+ 0000029A  52				push edx
+ 0000029B  5B			pop ebx
+ 0000029C  89 1D 00000134 R	mov math3, ebx
+
+ 000002A2  FF 35 00000035 R	push L5
+ 000002A8  FF 35 00000011 R	push L2
+ 000002AE  5B			pop ebx
+ 000002AF  58			pop eax
+ 000002B0  0F AF C3		imul eax, ebx
+ 000002B3  50			push eax
+
+ 000002B4  5B			pop ebx
+ 000002B5  89 1D 00000138 R	mov math4, ebx
+
+ 000002BB  FF 35 00000035 R	push L5
+ 000002C1  FF 35 00000011 R	push L2
+
+ 000002C7  5B				pop ebx
+ 000002C8  58				pop eax
+ 000002C9  85 DB			test ebx, ebx
+ 000002CB  0F 84 000001E1		jz EXIT_DIV_ON_NULL
+ 000002D1  99				cdq
+ 000002D2  BA 00000000			mov	edx, 	0
+ 000002D7  F7 FB			idiv ebx
+ 000002D9  50				push eax
+ 000002DA  5B			pop ebx
+ 000002DB  89 1D 0000013C R	mov math5, ebx
+
+ 000002E1  A1 0000012C R	mov eax, math1
+ 000002E6  A3 00000154 R	mov result, eax	
+ 000002EB  8D 3D 00000158 R	 lea edi, result_str
+ 000002F1  B9 00000004		 mov ecx, 4
+ 000002F6  32 C0		 xor al, al
+ 000002F8  F3/ AA		 rep stosb
+				INVOKE int_to_char, offset result_str, result
+				INVOKE outwf, offset result_str
+
+ 00000314  A1 00000130 R	mov eax, math2
+ 00000319  A3 00000154 R	mov result, eax	
+ 0000031E  8D 3D 00000158 R	 lea edi, result_str
+ 00000324  B9 00000004		 mov ecx, 4
+ 00000329  32 C0		 xor al, al
+ 0000032B  F3/ AA		 rep stosb
+				INVOKE int_to_char, offset result_str, result
+				INVOKE outwf, offset result_str
+
+ 00000347  A1 00000134 R	mov eax, math3
+ 0000034C  A3 00000154 R	mov result, eax	
+ 00000351  8D 3D 00000158 R	 lea edi, result_str
+ 00000357  B9 00000004		 mov ecx, 4
+ 0000035C  32 C0		 xor al, al
+ 0000035E  F3/ AA		 rep stosb
+				INVOKE int_to_char, offset result_str, result
+				INVOKE outwf, offset result_str
+
+ 0000037A  A1 00000138 R	mov eax, math4
+ 0000037F  A3 00000154 R	mov result, eax	
+ 00000384  8D 3D 00000158 R	 lea edi, result_str
+ 0000038A  B9 00000004		 mov ecx, 4
+ 0000038F  32 C0		 xor al, al
+ 00000391  F3/ AA		 rep stosb
+				INVOKE int_to_char, offset result_str, result
+				INVOKE outwf, offset result_str
+
+ 000003AD  A1 0000013C R	mov eax, math5
+ 000003B2  A3 00000154 R	mov result, eax	
+ 000003B7  8D 3D 00000158 R	 lea edi, result_str
+ 000003BD  B9 00000004		 mov ecx, 4
+ 000003C2  32 C0		 xor al, al
+ 000003C4  F3/ AA		 rep stosb
+				INVOKE int_to_char, offset result_str, result
+				INVOKE outwf, offset result_str
+
+ 000003E0  FF 35 00000078 R	push L12
+
+ 000003E6  5B			pop ebx
+ 000003E7  89 1D 00000140 R	mov check1, ebx
+
+ 000003ED  FF 35 0000007C R	push L13
+
+ 000003F3  5B			pop ebx
+ 000003F4  89 1D 00000144 R	mov check2, ebx
+
+ 000003FA  FF 35 00000140 R	push check1
+ 00000400  FF 35 00000144 R	push check2
+ 00000406  5B			pop ebx
+ 00000407  58			pop eax
+ 00000408  03 C3		add eax, ebx
+ 0000040A  50			push eax
+
+ 0000040B  5B			pop ebx
+ 0000040C  89 1D 00000148 R	mov res2, ebx
+
+ 00000412  A1 00000140 R	mov eax, check1
+ 00000417  A3 00000154 R	mov result, eax	
+ 0000041C  8D 3D 00000158 R	 lea edi, result_str
+ 00000422  B9 00000004		 mov ecx, 4
+ 00000427  32 C0		 xor al, al
+ 00000429  F3/ AA		 rep stosb
+				INVOKE int_to_char, offset result_str, result
+				INVOKE outwf, offset result_str
+
+ 00000445  A1 00000144 R	mov eax, check2
+ 0000044A  A3 00000154 R	mov result, eax	
+ 0000044F  8D 3D 00000158 R	 lea edi, result_str
+ 00000455  B9 00000004		 mov ecx, 4
+ 0000045A  32 C0		 xor al, al
+ 0000045C  F3/ AA		 rep stosb
+				INVOKE int_to_char, offset result_str, result
+				INVOKE outwf, offset result_str
+
+ 00000478  A1 00000148 R	mov eax, res2
+ 0000047D  A3 00000154 R	mov result, eax	
+ 00000482  8D 3D 00000158 R	 lea edi, result_str
+ 00000488  B9 00000004		 mov ecx, 4
+ 0000048D  32 C0		 xor al, al
+ 0000048F  F3/ AA		 rep stosb
+				INVOKE int_to_char, offset result_str, result
+				INVOKE outwf, offset result_str
+
+				INVOKE ExitProcess,0
+ 000004B2			EXIT_DIV_ON_NULL:
+				INVOKE ExitProcess,-1
+ 000004B9			main ENDP
+				end main
+Microsoft (R) Macro Assembler Version 14.37.32822.0	    12/15/24 17:32:41
+Asm.asm							     Symbols 2 - 1
+
+
+
+
+Segments and Groups:
+
+                N a m e                 Size     Length   Align   Combine Class
+
+CONST  . . . . . . . . . . . . .	32 Bit	 00000080 Para	  Public  'CONST'	 ReadOnly
+FLAT . . . . . . . . . . . . . .	GROUP
+STACK  . . . . . . . . . . . . .	32 Bit	 00001000 Para	  Stack	  'STACK'	 
+_DATA  . . . . . . . . . . . . .	32 Bit	 0000015C Para	  Public  'DATA'	
+_TEXT  . . . . . . . . . . . . .	32 Bit	 000004B9 Para	  Public  'CODE'	
+
+
+Procedures, parameters, and locals:
+
+                N a m e                 Type     Value    Attr
+
+ExitProcess  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+comp . . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+find_max . . . . . . . . . . . .	P Near	 0000004C _TEXT	Length= 0000004A Public STDCALL
+  find_maxx  . . . . . . . . . .	DWord	 bp + 00000008
+  find_maxy  . . . . . . . . . .	DWord	 bp + 0000000C
+  right1 . . . . . . . . . . . .	L Near	 00000075 _TEXT	
+  wrong1 . . . . . . . . . . . .	L Near	 00000081 _TEXT	
+  next1  . . . . . . . . . . . .	L Near	 0000008B _TEXT	
+foo  . . . . . . . . . . . . . .	P Near	 00000096 _TEXT	Length= 0000000E Public STDCALL
+  fooxxx . . . . . . . . . . . .	DWord	 bp + 00000008
+func . . . . . . . . . . . . . .	P Near	 000000A4 _TEXT	Length= 0000000F Public STDCALL
+int_to_char  . . . . . . . . . .	P Near	 00000000 _TEXT	Length= 0000004C Public STDCALL
+  pstr . . . . . . . . . . . . .	DWord	 bp + 00000008
+  intfield . . . . . . . . . . .	DWord	 bp + 0000000C
+  plus . . . . . . . . . . . . .	L Near	 0000002B _TEXT	
+  fin  . . . . . . . . . . . . .	L Near	 00000037 _TEXT	
+  write  . . . . . . . . . . . .	L Near	 00000039 _TEXT	
+len  . . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+main . . . . . . . . . . . . . .	P Near	 000000B3 _TEXT	Length= 00000406 Public STDCALL
+  right2 . . . . . . . . . . . .	L Near	 00000105 _TEXT	
+  next2  . . . . . . . . . . . .	L Near	 00000110 _TEXT	
+  right3 . . . . . . . . . . . .	L Near	 00000189 _TEXT	
+  wrong3 . . . . . . . . . . . .	L Near	 00000195 _TEXT	
+  next3  . . . . . . . . . . . .	L Near	 0000019F _TEXT	
+  EXIT_DIV_ON_NULL . . . . . . .	L Near	 000004B2 _TEXT	
+outnf  . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+outn . . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+outwf  . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+outw . . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+stcmp  . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+
+
+Symbols:
+
+                N a m e                 Type     Value    Attr
+
+@CodeSize  . . . . . . . . . . .	Number	 00000000h   
+@DataSize  . . . . . . . . . . .	Number	 00000000h   
+@Interface . . . . . . . . . . .	Number	 00000003h   
+@Model . . . . . . . . . . . . .	Number	 00000007h   
+@code  . . . . . . . . . . . . .	Text   	 _TEXT
+@data  . . . . . . . . . . . . .	Text   	 FLAT
+@fardata?  . . . . . . . . . . .	Text   	 FLAT
+@fardata . . . . . . . . . . . .	Text   	 FLAT
+@stack . . . . . . . . . . . . .	Text   	 FLAT
+L10  . . . . . . . . . . . . . .	Byte	 00000061 CONST	
+L11  . . . . . . . . . . . . . .	Byte	 00000076 CONST	
+L12  . . . . . . . . . . . . . .	DWord	 00000078 CONST	
+L13  . . . . . . . . . . . . . .	DWord	 0000007C CONST	
+L1 . . . . . . . . . . . . . . .	Byte	 00000003 CONST	
+L2 . . . . . . . . . . . . . . .	DWord	 00000011 CONST	
+L3 . . . . . . . . . . . . . . .	DWord	 00000015 CONST	
+L4 . . . . . . . . . . . . . . .	Byte	 00000019 CONST	
+L5 . . . . . . . . . . . . . . .	DWord	 00000035 CONST	
+L6 . . . . . . . . . . . . . . .	Byte	 00000039 CONST	
+L7 . . . . . . . . . . . . . . .	Byte	 0000003F CONST	
+L8 . . . . . . . . . . . . . . .	Byte	 00000047 CONST	
+L9 . . . . . . . . . . . . . . .	Byte	 0000004F CONST	
+answer1  . . . . . . . . . . . .	DWord	 00000124 _DATA	
+answer2  . . . . . . . . . . . .	DWord	 00000128 _DATA	
+buffer . . . . . . . . . . . . .	Byte	 00000004 _DATA	
+check1 . . . . . . . . . . . . .	DWord	 00000140 _DATA	
+check2 . . . . . . . . . . . . .	DWord	 00000144 _DATA	
+find_maxmax  . . . . . . . . . .	DWord	 00000104 _DATA	
+left . . . . . . . . . . . . . .	DWord	 0000014C _DATA	
+math1  . . . . . . . . . . . . .	DWord	 0000012C _DATA	
+math2  . . . . . . . . . . . . .	DWord	 00000130 _DATA	
+math3  . . . . . . . . . . . . .	DWord	 00000134 _DATA	
+math4  . . . . . . . . . . . . .	DWord	 00000138 _DATA	
+math5  . . . . . . . . . . . . .	DWord	 0000013C _DATA	
+max  . . . . . . . . . . . . . .	DWord	 00000108 _DATA	
+newline  . . . . . . . . . . . .	Byte	 00000000 CONST	
+res2 . . . . . . . . . . . . . .	DWord	 00000148 _DATA	
+result_str . . . . . . . . . . .	Byte	 00000158 _DATA	
+result . . . . . . . . . . . . .	DWord	 00000154 _DATA	
+res  . . . . . . . . . . . . . .	DWord	 00000110 _DATA	
+rig  . . . . . . . . . . . . . .	DWord	 00000150 _DATA	
+str1 . . . . . . . . . . . . . .	DWord	 00000114 _DATA	
+str2 . . . . . . . . . . . . . .	DWord	 00000118 _DATA	
+strc1  . . . . . . . . . . . . .	DWord	 0000011C _DATA	
+strc2  . . . . . . . . . . . . .	DWord	 00000120 _DATA	
+temp . . . . . . . . . . . . . .	DWord	 00000000 _DATA	
+text . . . . . . . . . . . . . .	DWord	 0000010C _DATA	
+
+	   0 Warnings
+	   0 Errors
