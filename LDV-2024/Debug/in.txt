@@ -1,0 +1,65 @@
+integer function find_max(integer x, integer y){
+	integer max;
+	if: x>y
+	{max = x;}
+	^{max = y;}
+	return max;
+}
+string function foo(string xxx){
+	return xxx;
+}
+
+void function func(){
+	println "Это процедура";
+	return;
+}
+
+main
+{
+	func();
+
+	integer max = find_max(2, 9);
+	string text = "Максимальное число больше 5";
+	if:max>5
+	{println text;}
+	
+	string res = foo("sdfgh");
+	println res;
+
+	string str1 = "Project";
+	string str2 = "Projec!";
+
+	integer strc1 = len(str1);
+	integer strc2 = len(str2);
+
+	if: strc1 ~ strc2
+	{text = "Длины строк равны";}
+	^{text = "Длины строк НЕ равны";}
+	println text;
+
+	integer answer1 = comp(str1, str2);
+	integer answer2 = comp(str1, str1);
+	print answer1;
+	print " ";
+	println answer2;
+
+	integer math1 = 5 - 2;
+	integer math2 = 5 + 2;
+	integer math3 = 5 % 2;
+	integer math4 = 5 * 2;
+	integer math5 = 5 / 2;
+
+	println math1;
+	println math2;
+	println math3;
+	println math4;
+	println math5;
+
+	integer check1 = 16xA;
+	integer check2 = 16x20;
+
+	integer res2 = check1 + check2;
+	println check1;
+	println check2;
+	println res2;
+}
